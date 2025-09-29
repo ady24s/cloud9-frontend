@@ -17,21 +17,33 @@ jobs:
     steps:
       # Step 1: Checkout code
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
 
-      # Step 2: Setup Node.js
+      # Step 2: Cache node_modules for faster builds
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Step 3: Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Step 3: Install dependencies & build React app
+      # Step 4: Install dependencies & build React app
       - name: Build React App
         run: |
           cd frontend
           npm install
           npm run build
 
-      # Step 4: Deploy build output to Azure Static Web Apps
+      # Step 5: Deploy build output to Azure Static Web Apps
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -40,3 +52,15 @@ jobs:
           action: "upload"
           app_location: "frontend"
           output_location: "build"
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
+          app_location: "frontend"
