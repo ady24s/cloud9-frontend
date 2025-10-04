@@ -36,3 +36,5 @@ faker==19.8.0
 fastapi
 authlib
 python-dotenv
+itsdangerous
+python-multipart

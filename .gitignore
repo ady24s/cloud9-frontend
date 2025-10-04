@@ -25,7 +25,4 @@ venv/
 # Node modules (if accidentally pulled)
 node_modules/
 
-# Frontend (not containerized right now)
-frontend/build/
-
 backend/vmCloud_data.csv

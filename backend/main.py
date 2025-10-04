@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import pandas as pd
 import numpy as np
@@ -17,15 +17,11 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 import joblib
 from sklearn.model_selection import train_test_split
 from starlette.middleware.sessions import SessionMiddleware
-from auth import router as auth_router
 
 # Initialize FastAPI app
 app = FastAPI()
 
 app.add_middleware(SessionMiddleware, secret_key="supersecretkey")
-
-# Include auth routes
-app.include_router(auth_router)
 
 # CORS config
 app.add_middleware(
@@ -363,4 +359,113 @@ async def chat(message: ChatMessage):
         return {"response": f"Message received: {message.message}"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize ML models
+isolation_forest = IsolationForest(contamination=0.1, random_state=42)
+scaler = StandardScaler()
+
+# Simulated data
+def generate_resource_metrics():
+    return {
+        "cpu_usage": random.uniform(0, 100),
+        "memory_usage": random.uniform(0, 100),
+        "network_traffic": random.uniform(0, 1000),
+        "power_consumption": random.uniform(100, 500)
+    }
+
+@app.get("/instances")
+async def get_instances():
+    instances = []
+    for i in range(10):
+        metrics = generate_resource_metrics()
+        instance = {
+            "id": f"i-{random.randint(1000,9999)}",
+            "type": random.choice(["t2.micro", "m5.large", "c5.xlarge"]),
+            "state": random.choice(["running", "stopped"]),
+            "metrics": metrics
+        }
+        instances.append(instance)
+    return {"instances": instances}
+
+@app.get("/ai/idle-detection")
+async def detect_idle_resources():
+    # Simulate ML-based idle detection
+    instances = []
+    for _ in range(10):
+        metrics = generate_resource_metrics()
+        features = np.array([[
+            metrics["cpu_usage"],
+            metrics["memory_usage"],
+            metrics["network_traffic"]
+        ]])
+        
+        # Use isolation forest to detect anomalies
+        is_idle = isolation_forest.fit_predict(features)[0] == -1
+        
+        instance = {
+            "id": f"i-{random.randint(1000,9999)}",
+            "metrics": metrics,
+            "is_idle": is_idle,
+            "confidence": random.uniform(0.7, 0.99)
+        }
+        instances.append(instance)
+    
+    return {
+        "idle_resources": instances,
+        "total_analyzed": len(instances),
+        "potential_savings": random.uniform(100, 1000)
+    }
+
+@app.get("/metrics")
+async def get_metrics():
+    return {
+        "total_spend": random.randint(5000, 10000),
+        "idle_resources": random.randint(1, 5),
+        "predicted_savings": random.randint(500, 2000),
+        "anomalies_detected": random.randint(0, 3),
+        "optimization_score": random.randint(60, 95)
+    }
+
+@app.get("/spend-history")
+async def get_spend_history():
+    months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
+    return {
+        "labels": months,
+        "actual": [random.randint(1000, 3000) for _ in range(6)],
+        "predicted": [random.randint(1000, 3000) for _ in range(6)]
+    }
+
+@app.get("/optimization-recommendations")
+async def get_recommendations():
+    return {
+        "recommendations": [
+            {
+                "id": "REC001",
+                "type": "Instance Rightsizing",
+                "description": "Downsize 3 overprovisioned instances",
+                "potential_savings": random.uniform(100, 500),
+                "confidence": random.uniform(0.8, 0.95)
+            },
+            {
+                "id": "REC002",
+                "type": "Idle Resource Termination",
+                "description": "Terminate 2 idle instances",
+                "potential_savings": random.uniform(200, 600),
+                "confidence": random.uniform(0.85, 0.98)
+            }
+        ]
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 
