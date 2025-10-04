@@ -14,7 +14,6 @@ import SecurityTrend from "./SecurityTrend";
 import awsLogo from "../assets/aws.png";
 import googleLogo from "../assets/google-cloud.png";
 import azureLogo from "../assets/azure.jpeg";
-import ChatbotUI from "./ChatbotUI";
 
 const Dashboard = ({ provider }) => {
   const [metrics, setMetrics] = useState(null);

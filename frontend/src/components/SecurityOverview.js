@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, Spinner, Alert, ListGroup, Badge } from "react-bootstrap";
-import { FaShieldAlt, FaLock, FaExclamationTriangle } from "react-icons/fa";
+import {  FaExclamationTriangle } from "react-icons/fa";
 
 const SecurityOverview = () => {
   const [securityData, setSecurityData] = useState(null);

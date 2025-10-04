@@ -49,7 +49,7 @@ const CloudCredentials = () => {
     }
   };
 
-  const validateCredentials = () => {
+  /*const validateCredentials = () => {
     switch (provider) {
       case "aws":
         return (
@@ -70,7 +70,7 @@ const CloudCredentials = () => {
       default:
         return false;
     }
-  };
+  };*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();
